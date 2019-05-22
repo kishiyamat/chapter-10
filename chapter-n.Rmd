@@ -1,0 +1,51 @@
+---
+title: "chapter-n"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(magrittr)
+set.seed(0)
+```
+
+## Chapter-N
+
+This file is a note to go over the book we are about to use in the tutorial. 
+
+## chapter 7
+
+```{r}
+k_1.l_1 <- data.frame(plant = rnorm(10, mean = 32, sd = 3),
+                      ft    = rep("1", 10),
+                      soil  = rep("1", 10))
+k_1.l_2 <- data.frame(plant = rnorm(10, mean = 34, sd = 3),
+                      ft    = rep("1", 10),
+                      soil  = rep("2", 10))
+k_2.l_1 <- data.frame(plant = rnorm(10, mean = 25, sd = 3),
+                      ft    = rep("2", 10),
+                      soil  = rep("1", 10))
+k_2.l_2 <- data.frame(plant = rnorm(10, mean = 35, sd = 3),
+                      ft    = rep("2", 10),
+                      soil  = rep("2", 10))
+
+plants <- rbind(k_1.l_1, k_1.l_2, k_2.l_1, k_2.l_2)
+```
+
+plot the interaction
+
+```{r}
+ggplot(plants) +
+  aes(x = soil, y = plant) +
+  geom_boxplot() +
+  facet_wrap(~ft)
+```
+
+```{r}
+# plants[plants$soil==1 & plants$ft==1,]
+plants[ 1:10,]
+plants[11:20,]
+```
+
