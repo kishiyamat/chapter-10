@@ -26,3 +26,35 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+d <- read.csv("http://hosho.ees.hokudai.ac.jp/~kubo/stat/2015/Fig/poisson/data3a.csv")
+d
+```
+```{r}
+d
+fit <- glm(y ~ x, data = d, family = poisson)
+fit
+```
+
+パラメターの最適化
+
+```{r}
+Y <- rpois(100, 3.6)
+hist(Y)
+```
+
+パラメターの最適化をRでしてみる。
+dpois returns probability.
+
+```{r}
+LL <- function(x) return(sum(dpois(Y, x[1], log = TRUE)))
+# LL <- function (x) return(sum(NB(x[1],x[2])*d)) # 目的関数(対数尤度を計算する関数)
+optim(c(2), LL, control=list(fnscale=-1)) # 初期パラメータ (0.2, 0.5) で最大化実行
+```
+
+1. function
+2. theory
+3. graph
+
+again
