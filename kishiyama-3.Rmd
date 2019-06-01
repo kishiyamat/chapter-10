@@ -1,0 +1,128 @@
+---
+title: "Generized Linear Model"
+author: "Takeshi Kishiyama"
+date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    message = FALSE,
+    cache = FALSE,
+    warning = FALSE,
+    width=6,
+    fig.align='center',
+    fig.pos='H',
+    dev = c("png", "svg")
+)
+# knitr::opts_chunk$set(echo=FALSE)
+library(DiagrammeR)
+library(tidyverse)
+library(lubridate)
+library(magrittr)
+library(ggplot2)
+library(DT)
+library(rmarkdown)
+'%r+%' <- function(a,b) rbind(a,b)
+library("dplyr")
+library("stringr")
+```
+
+# はじめに
+
+## 今日のテーマ
+
+* R入門（関数型のアプローチ）
+* 8章と9章
+* **10章**
+    
+## 一般化した線形回帰、一般化線形モデル
+
+* 何回読んでもリンク関数を立てる嬉しさがわからん...という人向け
+
+```{r}
+d <- read.csv("http://hosho.ees.hokudai.ac.jp/~kubo/stat/2015/Fig/poisson/data3a.csv")
+d
+```
+
+```{r}
+d
+fit <- glm(y ~ x, data = d, family = poisson)
+fit
+```
+
+パラメターの最適化
+
+```{r}
+Y <- rpois(100, 3.6)
+hist(Y)
+```
+
+パラメターの最適化をRでしてみる。
+dpois returns probability.
+
+```{r}
+LL <- function(x) return(sum(dpois(Y, x[1], log = TRUE)))
+# LL <- function (x) return(sum(NB(x[1],x[2])*d)) # 目的関数(対数尤度を計算する関数)
+optim(c(2), LL, control=list(fnscale=-1)) # 初期パラメータ (0.2, 0.5) で最大化実行
+```
+
+1. function
+2. theory
+3. graph
+
+again
+これは単純な線
+you might want to know what "vector" means
+
+
+```{r}
+# function y
+f.y <- function(x){
+    b_0 <- 0
+    b_1 <- 1
+    e <- rnorm(1, mean=0, sd=1)
+    y <- b_0 + b_1 * x + e
+    return(y)
+}
+
+# X_1=1, X_2=1.1, X_3=1.2, ...
+X <- seq(1, 10, 0.1)
+
+Y <- sapply(X, f.y)
+Y_b <- f.y(X)
+plot(X, Y)
+
+plot(X, Y_b)
+```
+
+このグラフから傾きと切片を知りたい。
+Which of values do we need so that we can get the best parameters?
+
+
+```{r}
+lm(Y~X)
+```
+
+## 10章
+
+* 一般化線形モデルが解決できる問題
+* 一般化線形モデルのパラメータ推定
+* パラメータ推定の細かい話
+
+
+how can get these values?
+
+```{r}
+# function y
+L <- function(parameters){
+    b0 <- parameters[1]
+    b1 <- parameters[2]
+    LL <- sum((Y-(b0 + b1*X))**2)
+} 
+
+optim(c(0,0), L) # 初期パラメータ (0.2, 0.5) で最大化実行
+```
+
+
