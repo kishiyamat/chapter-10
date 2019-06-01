@@ -1,5 +1,5 @@
 ---
-title: "Generized Linear Model"
+title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
 output: ioslides_presentation
@@ -7,7 +7,6 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-    echo = FALSE,
     message = FALSE,
     cache = FALSE,
     warning = FALSE,
@@ -29,21 +28,25 @@ library("dplyr")
 library("stringr")
 ```
 
-# はじめに
+# R入門<br>（関数型っぽく）
 
 ## 今日のテーマ
 
-* R入門（関数型のアプローチ）
+* R入門（関数型っぽく）
 * 8章と9章
 * 10章
     
 ## 今日のテーマ
 
-* **R入門（関数型のアプローチ）**
+* **R入門（関数型っぽく）**
 * 8章と9章
 * 10章
-    
-## R入門（関数型のアプローチ）
+
+```{r}
+set.seed(1)
+```
+ 
+## R入門
 
 * 関数と型、ベクトル
 * 確率密度関数、尤度、パラメター
@@ -51,175 +54,101 @@ library("stringr")
 
 ## **関数**と型、ベクトル
 
+確率密度関数って言ってるけど、そもそも**関数**ってなんだっけ？
+
+* 「もらった要素（引数）に手を加えてから返すもの」です。
+    
+```{r}
+factorial(5)
+my.f <- function(x){
+    x + 2
+}
+my.f(4)
+```
 
 ## 関数と**型**、ベクトル
+
+なら「型」ってなんですか？
+
+* 文字型とか数字型とか色々あります。
+* 関数の引数は特定の型しか受けつない場合があります。
+    
+```{r}
+class("猫")
+class(2)
+# exp("猫")
+# Error in exp("猫") : non-numeric argument to mathematical function
+```
 
 
 ## 関数と型、**ベクトル**
 
-## **確率密度関数**、尤度、パラメター
+関数と型は分かったｊけど、「ベクトル」は？
 
-## 確率密度関数、**尤度**、パラメター
+* 全要素の型が同型と保証されています(atomic vecotr)。
+* その型を引数にとる関数を全要素に適用(apply)できます！
 
-## 確率密度関数、尤度、**パラメター**
+```{r}
+X <- 1:10
+factorial(X)
+my.f(X)
+# sapply(X, my.f)
+```
+
+## 関数と型、ベクトルのまとめ
+
+ここまでのまとめ
+
+* 引数をとって操作を行ない結果を返す
+* データには型があり、関数の引数には型の制限がある
+* 同型である atomic vecotr には関数を apply できます。
+
+えっと、じゃあ確率密度関数ってなに？
+
+## **確率密度関数**、パラメター、尤度
+
+**確率密度関数** は任意の値をとって確率を返します...？
+ 
+* 餌をばらまいたときに集まってくる猫の数
+* 4匹集まる確率や10匹あつまる確率を返してくれる。
+
+```{r, fig.height=3}
+x <- 0:10  # 0から10までの値のベクトル
+p <- dpois(lambda=4, x)  # 「それぞれが起こりうる確率」のベクトル
+plot(p~x, type="b", main="平均4のポワソン分布")
+```
+
+
+## 確率密度関数、**パラメター**、尤度
+
+値が起きる確率を説明する2つのアプローチ
+
+* 0匹の確率、1匹の確率、とすべての条件で調べる
+* 確率密度関数の **パラメター** を調べる $\gets$ こっちで進める
+
+```{r, fig.height=3}
+layout(matrix(1:2, ncol=2))
+plot(p~x, type="b", main="平均4のポワソン分布")
+p.lambda.8 <- dpois(lambda=8, x)  # もしパラメターが8だったら？
+plot(p.lambda.8~x, type="b", main="平均8のポワソン分布")
+```
+
+## 確率密度関数、パラメター、**尤度**
+
+１００回の測定結果(`Y <- rpois(100, 4.3)`)と比べてどっちが高い？
+
+1. hist(Y)が左の分布から起こる確率
+1. hist(Y)が右の分布から起こる確率
+    
+```{r, fig.height=2}
+Y <- rpois(100, 4.3)
+layout(matrix(1:3, ncol=3)) 
+plot(p~x, type="b", main="平均4のポワソン分布")
+hist(Y)
+plot(p.lambda.8~x, type="b", main="平均8のポワソン分布")
+```
+
+* $f(x)=\frac{\lambda^{x}e^{-
 
 ## 最尤推定
-
-## 8章と9章
-
-* 相関関係と因果関係の違い(交絡変数は触れたい)
-* 線形回帰のパラメータ推定
-* 線形回帰が解決できる／できない問題
-
-## 相関関係と因果関係の違い
-
-* 以下の２つのどちらが相関で因果？
-    * 木の高さ体積の関係(図左)
-    * 車の時速と停止距離の関係(図右)
-
-```{r plot, fig.height=3}
-par(mfrow=c(1,2))
-plot(trees$Height, trees$Volume)
-plot(cars$speed, cars$dist)
-```
-
-## なんで相関関係と因果関係の違いが大切なの？
-
-* 結果が相関しているからと言って因果関係があるとは限らない
-* 実験デザインで **交絡** が見つかるとしんどい
-
-## 
-
-## 因果関係のガイドライン
-
-* Hill(1965)からピックアップ
-    * A->Bの相関強い？ 
-    * A->Bは時系列に沿ってる？
-    * A->Bは他の知見と比べて妥当？
-* 交絡は即死
-
-## ここまでの参考書
-
-* 因果推論
-
-## 交絡
-
-```{r}
-grViz("
-digraph boxes_and_circles {
-
-  # a 'graph' statement
-  graph [overlap = true, fontsize = 10]
-
-  # several 'node' statements
-  node [shape = box,
-        fontname = Helvetica]
-  Height; Volume; 木の種類や樹齢、環境など;
-
-  # several 'edge' statements
-  木の種類や樹齢、環境など -> Height
-  木の種類や樹齢、環境など -> Volume
-
-}
-")
-```
-
-
-```{r}
-head(cars)
-head(trees)
-plot(cars)
-```
-
-## 線形回帰のパラメータ推定
-
-## 線形回帰が解決できる／できない問題
-
-## 一般化した線形回帰、一般化線形モデル
-
-* 何回読んでもリンク関数を立てる嬉しさがわからん...という人向け
-
-```{r}
-d <- read.csv("http://hosho.ees.hokudai.ac.jp/~kubo/stat/2015/Fig/poisson/data3a.csv")
-d
-```
-
-```{r}
-d
-fit <- glm(y ~ x, data = d, family = poisson)
-fit
-```
-
-パラメターの最適化
-
-```{r}
-Y <- rpois(100, 3.6)
-hist(Y)
-```
-
-パラメターの最適化をRでしてみる。
-dpois returns probability.
-
-```{r}
-LL <- function(x) return(sum(dpois(Y, x[1], log = TRUE)))
-# LL <- function (x) return(sum(NB(x[1],x[2])*d)) # 目的関数(対数尤度を計算する関数)
-optim(c(2), LL, control=list(fnscale=-1)) # 初期パラメータ (0.2, 0.5) で最大化実行
-```
-
-1. function
-2. theory
-3. graph
-
-again
-これは単純な線
-you might want to know what "vector" means
-
-
-```{r}
-# function y
-f.y <- function(x){
-    b_0 <- 0
-    b_1 <- 1
-    e <- rnorm(1, mean=0, sd=1)
-    y <- b_0 + b_1 * x + e
-    return(y)
-}
-
-# X_1=1, X_2=1.1, X_3=1.2, ...
-X <- seq(1, 10, 0.1)
-
-Y <- sapply(X, f.y)
-Y_b <- f.y(X)
-plot(X, Y)
-
-plot(X, Y_b)
-```
-
-このグラフから傾きと切片を知りたい。
-Which of values do we need so that we can get the best parameters?
-
-
-```{r}
-lm(Y~X)
-```
-
-## 10章
-
-* 一般化線形モデルが解決できる問題
-* 一般化線形モデルのパラメータ推定
-* パラメータ推定の細かい話
-
-
-how can get these values?
-
-```{r}
-# function y
-L <- function(parameters){
-    b0 <- parameters[1]
-    b1 <- parameters[2]
-    LL <- sum((Y-(b0 + b1*X))**2)
-} 
-
-optim(c(0,0), L) # 初期パラメータ (0.2, 0.5) で最大化実行
-```
 
