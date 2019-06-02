@@ -2,7 +2,8 @@
 title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
-output: ioslides_presentation
+# output: ioslides_presentation
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -50,7 +51,7 @@ set.seed(1)
 
 * 関数と型、ベクトル
 * 確率密度関数、尤度、パラメター
-* 最尤推定
+* 色々な最尤推定
 
 ## **関数**と型、ベクトル
 
@@ -83,7 +84,7 @@ class(2)
 
 ## 関数と型、**ベクトル**
 
-関数と型は分かったｊけど、「ベクトル」は？
+関数と型は分かったけど、「ベクトル」は？
 
 * 全要素の型が同型と保証されています(atomic vecotr)。
 * その型を引数にとる関数を全要素に適用(apply)できます！
@@ -99,7 +100,7 @@ my.f(X)
 
 ここまでのまとめ
 
-* 引数をとって操作を行ない結果を返す
+* 関数は引数をとって操作を行ない結果を返す
 * データには型があり、関数の引数には型の制限がある
 * 同型である atomic vecotr には関数を apply できます。
 
@@ -115,40 +116,132 @@ my.f(X)
 ```{r, fig.height=3}
 x <- 0:10  # 0から10までの値のベクトル
 p <- dpois(lambda=4, x)  # 「それぞれが起こりうる確率」のベクトル
-plot(p~x, type="b", main="平均4のポワソン分布")
+plot(p~x, type="b", main="ポワソン分布(パラメターは4)")
 ```
 
 
 ## 確率密度関数、**パラメター**、尤度
 
-値が起きる確率を説明する2つのアプローチ
+確率密度関数を探る2つのアプローチ
 
 * 0匹の確率、1匹の確率、とすべての条件で調べる
-* 確率密度関数の **パラメター** を調べる $\gets$ こっちで進める
+* **確率密度関数のパラメターを調べる** （例: lambda=4のモデル）
 
-```{r, fig.height=3}
+```{r, fig.height=2.5}
 layout(matrix(1:2, ncol=2))
-plot(p~x, type="b", main="平均4のポワソン分布")
+plot(p~x, type="b", main="パラメターが4のポワソン分布")
 p.lambda.8 <- dpois(lambda=8, x)  # もしパラメターが8だったら？
-plot(p.lambda.8~x, type="b", main="平均8のポワソン分布")
+plot(p.lambda.8~x, type="b", main="パラメターが8のポワソン分布")
 ```
 
 ## 確率密度関数、パラメター、**尤度**
 
-１００回の測定結果(`Y <- rpois(100, 4.3)`)と比べてどっちが高い？
+* 中央データはどっちのモデルから出てきたっぽい？
+    * 「モデルからデータが得られる確率」が **尤度**
 
-1. hist(Y)が左の分布から起こる確率
-1. hist(Y)が右の分布から起こる確率
-    
-```{r, fig.height=2}
+```{r, fig.height=3}
 Y <- rpois(100, 4.3)
 layout(matrix(1:3, ncol=3)) 
-plot(p~x, type="b", main="平均4のポワソン分布")
+plot(p~x, type="b", main="パラメター 4のポワソン分布")
 hist(Y)
-plot(p.lambda.8~x, type="b", main="平均8のポワソン分布")
+plot(p.lambda.8~x, type="b", main="パラメター 8のポワソン分布")
 ```
 
-* $f(x)=\frac{\lambda^{x}e^{-
+## 確率密度関数、パラメター、**尤度**
 
-## 最尤推定
+* 中央データはどっちのモデルから出てきたっぽい？
+    * 「モデルからデータが得られる確率」が **尤度**
+    * $P(y|\theta=4)$ をすべてのyで求めて掛け算...（尤度）
+    * すると値が小さくなりすぎるのでY -> log -> sum する。（対数尤度）
 
+```{r, fig.height=3}
+p <- dpois(lambda=4, Y)
+prod(p)
+sum(log(p))
+```
+
+## 確率密度関数、パラメター、**尤度**
+
+パラメターが4の時の対数尤度は`r sum(log(p))` 。ほかの時は？
+
+* 1:10をパラメター(λ)に入れてそれぞれ求めてみる。
+
+```{r, fig.height=2.8}
+lambdas <- 1:10
+logL.f <- function(l) sum(log(dpois(lambda=l, Y)))
+logL <- sapply(lambdas, logL.f)
+# lambda = 4 の時が一番尤度が高い <- **最尤推定値**
+plot(logL~lambdas, type="l")
+```
+
+## **確率密度関数**、パラメター、尤度
+
+まとめ
+
+* 確率密度関数は「ある値が実現する確率を返す関数」
+* それぞれの値ではなく、「パラメター」で関数を定義してモデルした
+* 手もとのデータに対して、それぞれのモデル（with パラメター）は尤度を持つ
+    * (尤度は掛け算で求められるけど、対数尤度を使う)
+
+OK、プロットしたらわかるけど、実際に最も尤もらしい値はどうやって求めるの？
+
+## 最尤推定いろいろ
+
+* 数式で(教科書pp. 152--153)
+* `optim` 関数で（このチュートリアルで結構使います）
+
+```{r, fig.height=2.8}
+plot(logL~lambdas, type="l")
+```
+
+## 最尤推定いろいろ
+
+* 数式で(教科書pp. 152--153)
+    * 尤度関数を微分して0の値(傾きが0の部分)
+
+```{r, fig.height=2.8}
+plot(logL~lambdas, type="l")
+```
+
+## 最尤推定いろいろ
+
+* `optim` 関数で（このチュートリアルで結構使います）
+    * Yはすでに分かっていて、未知のlambdaを知る
+    * うまく行くとき、行かないときがある。（データの数に依存）
+
+```{r, fig.height=2.8}
+logL.f <- function(parameters){
+    lambda=parameters[1]
+    Y <- rpois(1000, 4.3)
+    -sum(log(dpois(lambda=lambda, Y)))
+}
+optim(c(3), fn = logL.f)$par
+```
+
+## 最尤推定いろいろ
+
+* `optim` 関数で（このチュートリアルで結構使います）
+    * 推定する値は間接的でもよい
+
+```{r, fig.height=2.5, fig.width=2.5}
+logL.f <- function(parameters){
+    beta = parameters[1] + 2
+    lambda= beta
+    Y <- rpois(1000, 4.3)
+    -sum(log(dpois(lambda=lambda, Y)))
+}
+optim(c(2), fn = logL.f)$par
+```
+
+## 最尤推定のまとめ
+
+* 数学的には対数尤度関数を微分して0になった点が最尤推定地
+* `optim`関数でも実現できる
+* 推定するパラメターとYの値にほかの操作が入っていてもOK
+
+## 今日のテーマ
+
+* **R入門（関数型っぽく）** $\gets$ OK？
+    * 説明が足りなかった部分、教えてくださいー
+* 8章と9章
+* 10章
