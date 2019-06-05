@@ -7,7 +7,6 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-    echo = FALSE,
     message = FALSE,
     cache = FALSE,
     warning = FALSE,
@@ -29,7 +28,7 @@ library("dplyr")
 library("stringr")
 ```
 
-# はじめに
+# **8章と9章**
 
 ## 今日のテーマ
 
@@ -39,36 +38,68 @@ library("stringr")
     
 ## 8章と9章
 
-* 相関関係と因果関係の違い(交絡変数は触れたい)
+* **相関関係と因果関係の違い(交絡変数は触れたい)**
+    * 見た目は似てるけど...?
 * 線形回帰のパラメータ推定
+    * さっきの `optim` を実際に利用（GLMのウォーミングアップ）
 * 線形回帰が解決できる／できない問題
+    * できない問題、GLMならできます。
 
 ## 相関関係と因果関係の違い
 
-* 以下の２つのどちらが相関で因果？
-    * 木の高さ体積の関係(図左)
-    * 車の時速と停止距離の関係(図右)
+線形回帰の前に、以下の２つのどちらが相関で因果？
 
 ```{r plot, fig.height=3}
-par(mfrow=c(1,2))
-plot(trees$Height, trees$Volume)
-plot(cars$speed, cars$dist)
+layout(matrix(1:2, ncol=2)) 
+# 木の高さ体積の関係(図左)
+plot(x=trees$Height, y=trees$Volume)
+# 車の時速と停止距離の関係(図右)
+plot(x=cars$speed, y=cars$dist)
 ```
 
-## なんで相関関係と因果関係の違いが大切なの？
+## 相関関係と因果関係の違い
 
-* 結果が相関しているからと言って因果関係があるとは限らない
-* 実験デザインで **交絡** が見つかるとしんどい
+* 相関: X(height)とY(volume)の2変量の間の関連性
+    * Xを変えてもYは変わらない。
+* 因果: X(speed)がY(distance)を説明
+    * Xを変えるとYも変動しそう。
+    * $\to$ **XはYを説明** し、 **YはXに応答(依存、従属)**
 
-## 
+```{r, echo=FALSE, fig.height=2}
+grViz("
+
+digraph boxes_and_circles {
+
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 8]
+
+  # several 'node' statements
+  node [shape = box,
+        fontname = Helvetica]
+  height; volume; confounding_factors;
+  speed; distance;
+
+  # several 'edge' statements
+  confounding_factors -> height
+  confounding_factors -> volume
+  speed -> distance
+
+}
+
+")
+```
+
+## 因果関係と線形回帰
+
+* 因果: X(speed)がY(distance)を説明
+    * 判断基準: Hill(1965)の抜粋
+        * A $\to$ Bの相関強い？ 
+        * A $\to$ Bは時系列に沿ってる？
+        * A $\to$ Bは他の知見と比べて妥当？
+    * $\hat{Y}_i = a + b X_i$
 
 ## 因果関係のガイドライン
 
-* Hill(1965)からピックアップ
-    * A->Bの相関強い？ 
-    * A->Bは時系列に沿ってる？
-    * A->Bは他の知見と比べて妥当？
-* 交絡は即死
 
 ## ここまでの参考書
 
