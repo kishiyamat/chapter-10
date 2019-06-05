@@ -59,8 +59,10 @@ plot(x=cars$speed, y=cars$dist)
 
 ## 相関関係と因果関係の違い
 
+グラフの見た目は似ているけど、仕組みは異なる。
+
 * 相関: X(height)とY(volume)の2変量の間の関連性
-    * Xを変えてもYは変わらない。
+    * Xを変えてもYは変わらない。(交絡因子の存在)
 * 因果: X(speed)がY(distance)を説明
     * Xを変えるとYも変動しそう。
     * $\to$ **XはYを説明** し、 **YはXに応答(依存、従属)**
@@ -89,7 +91,37 @@ digraph boxes_and_circles {
 ")
 ```
 
+## 相関関係と因果関係
+
+相関と因果を見分ける判断基準: Hill(1965)の抜粋
+
+* X $\to$ Y の相関強い？(定量化)
+* X $\to$ Y は時系列に沿ってる？
+* X $\to$ Y は他の知見と比べて妥当？
+
+```{r, echo=FALSE, fig.height=2}
+# TODO: 相関の分析
+```
+
+## 相関関係と因果関係の違いのまとめ
+
+* 見た目はそっくりさんだけど、相関はXがYを説明しない。
+* 他方、因果はXがYを説明し、YはXに応答する。
+* 因果は相関の強さや時系列、他の知見を考慮。
+
+相関の定量化は分かったけど、因果はどう定量化するの？
+
+```{r plot, fig.height=3}
+layout(matrix(1:2, ncol=2)) 
+# 木の高さ体積の関係(図左)
+plot(x=trees$Height, y=trees$Volume)
+# 車の時速と停止距離の関係(図右)
+plot(x=cars$speed, y=cars$dist)
+```
+
 ## 因果関係と線形回帰
+
+線を引く気持ちと統計量
 
 * 因果: X(speed)がY(distance)を説明
     * 判断基準: Hill(1965)の抜粋
@@ -97,42 +129,6 @@ digraph boxes_and_circles {
         * A $\to$ Bは時系列に沿ってる？
         * A $\to$ Bは他の知見と比べて妥当？
     * $\hat{Y}_i = a + b X_i$
-
-## 因果関係のガイドライン
-
-
-## ここまでの参考書
-
-* 因果推論
-
-## 交絡
-
-```{r}
-grViz("
-digraph boxes_and_circles {
-
-  # a 'graph' statement
-  graph [overlap = true, fontsize = 10]
-
-  # several 'node' statements
-  node [shape = box,
-        fontname = Helvetica]
-  Height; Volume; 木の種類や樹齢、環境など;
-
-  # several 'edge' statements
-  木の種類や樹齢、環境など -> Height
-  木の種類や樹齢、環境など -> Volume
-
-}
-")
-```
-
-
-```{r}
-head(cars)
-head(trees)
-plot(cars)
-```
 
 ## 線形回帰のパラメータ推定
 
