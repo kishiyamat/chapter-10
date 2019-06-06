@@ -2,9 +2,9 @@
 title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
-# output: ioslides_presentation
-output: github_document
-always_allow_html: yes
+output: ioslides_presentation
+# output: github_document
+# always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -128,11 +128,13 @@ plot(x=cars$speed, y=cars$dist)
 * 因果: X(speed)がY(distance)を説明(切片と傾きでモデル化)
 * $\hat{Y}_i = a + b X_i$ (aとbが0より大きいか、が問題)
 
-```{r}
-X <- cars$speed; head(X)
-Y <- cars$dist; head(Y)
+```{r, echo=FALSE, fig.height=3}
+X <- cars$speed
+Y <- cars$dist
+plot(Y~X)
+result <- lm(Y~X)
+abline(result)
 ```
-
 
 ## 線形回帰、パラメータ推定
 
@@ -140,12 +142,12 @@ Y <- cars$dist; head(Y)
 
 * $\sum_{i=1}^{n}\varepsilon_i^2 = \sum_{i=1}^{n}(Y_i - (a + b X_i))^2$
     
-```{r}
+```{r optim}
+X <- cars$speed
+Y <- cars$dist
 least.square <- function(parameters){
     a <- parameters[1]
     b <- parameters[2]
-    X <- cars$speed
-    Y <- cars$dist
     Y.hat <- a + b * X
     sum((Y-Y.hat)^2) # この値は誤差なので、小さいほどよい。
 }
