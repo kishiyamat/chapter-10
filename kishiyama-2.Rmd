@@ -2,8 +2,8 @@
 title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
-output: ioslides_presentation
-# output: github_document
+# output: ioslides_presentation
+output: github_document
 always_allow_html: yes
 ---
 
