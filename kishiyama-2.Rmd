@@ -3,6 +3,8 @@ title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
 output: ioslides_presentation
+# output: github_document
+# always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -38,11 +40,11 @@ library("stringr")
     
 ## 8章と9章
 
-* **相関関係と因果関係の違い(交絡変数は触れたい)**
+* **相関関係と因果関係の違い**
     * 見た目は似てるけど...?
-* 線形回帰のパラメータ推定
-    * さっきの `optim` を実際に利用（GLMのウォーミングアップ）
-* 線形回帰が解決できる／できない問題
+* 線形回帰、パラメータ推定
+    * `optim` を実際に利用（GLMのウォーミングアップ）
+* 線形回帰の範囲と限界
     * できない問題、GLMならできます。
 
 ## 相関関係と因果関係の違い
@@ -68,7 +70,7 @@ plot(x=cars$speed, y=cars$dist)
     * $\to$ **XはYを説明** し、 **YはXに応答(依存、従属)**
 
 ```{r, echo=FALSE, fig.height=2}
-grViz("
+graph <- grViz("
 
 digraph boxes_and_circles {
 
@@ -89,9 +91,10 @@ digraph boxes_and_circles {
 }
 
 ")
+graph
 ```
 
-## 相関関係と因果関係
+## 相関関係と因果関係の違い {.smaller}
 
 相関と因果を見分ける判断基準: Hill(1965)の抜粋
 
@@ -99,8 +102,10 @@ digraph boxes_and_circles {
 * X $\to$ Y は時系列に沿ってる？
 * X $\to$ Y は他の知見と比べて妥当？
 
-```{r, echo=FALSE, fig.height=2}
-# TODO: 相関の分析
+```{r}
+# cor.test関数でピアソンの相関係数(r)とt値を求める
+# 分母（ばらつき）が大きいとrは下がる。
+cor.test(cars$speed, cars$dist)
 ```
 
 ## 相関関係と因果関係の違いのまとめ
@@ -109,28 +114,93 @@ digraph boxes_and_circles {
 * 他方、因果はXがYを説明し、YはXに応答する。
 * 因果は相関の強さや時系列、他の知見を考慮。
 
-相関の定量化は分かったけど、因果はどう定量化するの？
+相関の定量化は分かったけど、**因果** はどう定量化するの？
 
-```{r plot, fig.height=3}
-layout(matrix(1:2, ncol=2)) 
-# 木の高さ体積の関係(図左)
-plot(x=trees$Height, y=trees$Volume)
+```{r, echo=FALSE, fig.height=3}
 # 車の時速と停止距離の関係(図右)
 plot(x=cars$speed, y=cars$dist)
 ```
 
-## 因果関係と線形回帰
+## 線形回帰、パラメータ推定
 
-線を引く気持ちと統計量
+因果のある **XはYを説明** し、 **YはXに応答(依存、従属)**
 
-* 因果: X(speed)がY(distance)を説明
-    * 判断基準: Hill(1965)の抜粋
-        * A $\to$ Bの相関強い？ 
-        * A $\to$ Bは時系列に沿ってる？
-        * A $\to$ Bは他の知見と比べて妥当？
-    * $\hat{Y}_i = a + b X_i$
+* 因果: X(speed)がY(distance)を説明(切片と傾きでモデル化)
+* $\hat{Y}_i = a + b X_i$ (aとbが0より大きいか、が問題)
 
-## 線形回帰のパラメータ推定
+```{r, echo=FALSE, fig.height=3}
+X <- cars$speed
+Y <- cars$dist
+plot(Y~X)
+result <- lm(Y~X)
+abline(result)
+```
 
-## 線形回帰が解決できる／できない問題
+## 線形回帰、パラメータ推定
 
+モデル式と実測値の誤差を最小にするようなaとbが欲しい。
+
+* $\sum_{i=1}^{n}\varepsilon_i^2 = \sum_{i=1}^{n}(Y_i - (a + b X_i))^2$
+    
+```{r optim}
+X <- cars$speed
+Y <- cars$dist
+least.square <- function(parameters){
+    a <- parameters[1]
+    b <- parameters[2]
+    Y.hat <- a + b * X
+    sum((Y-Y.hat)^2) # この値は誤差なので、小さいほどよい。
+}
+
+optim(c(0, 1), fn = least.square)$par
+```
+
+## 因果関係と線形回帰、パラメータ推定
+
+```{r}
+# 一行でもできる。
+plot(Y~X)
+result <- lm(Y~X)
+abline(result)
+```
+
+## 線形回帰、パラメータ推定 {.smaller}
+
+```{r}
+summary(result)
+```
+
+
+## 線形回帰、パラメータ推定まとめ
+
+* 説明変数と応答変数
+* 誤差を最小にする関数を作ってパラメター推定
+* `lm` で簡単に作れる。
+    * p(パラメターの分布が0より大きい確率...?)も出せる。
+
+解ける問題、解けない問題
+
+## 線形回帰の範囲と限界
+
+形
+
+* 特徴は線形
+* 非線形は？
+
+## 線形回帰の範囲と限界
+
+誤差
+
+* 誤差の範囲は？
+* ほかの分布はどうだろう。
+
+## 線形回帰の範囲と限界のまとめ
+
+解ける範囲と解けない範囲
+
+## 今日のテーマ
+
+* R入門（関数型っぽく）
+* **8章と9章** $\gets$ OK？
+    * 説明が足りなかった部分、教えてくださいー
+* 10章
