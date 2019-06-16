@@ -1,7 +1,7 @@
 Generalized Linear Model
 ================
 Takeshi Kishiyama
-2019/06/06 22:21
+2019/06/14 16:37
 
 **8章と9章**
 ============
@@ -9,7 +9,7 @@ Takeshi Kishiyama
 今日のテーマ
 ------------
 
--   R入門（関数型のアプローチ）
+-   R入門
 -   **8章と9章**
 -   10章
 
@@ -51,7 +51,7 @@ plot(x=cars$speed, y=cars$dist)
 
 <!--html_preserve-->
 
-<script type="application/json" data-for="htmlwidget-619b84c66f9748e7c7f7">{"x":{"diagram":"\n\ndigraph boxes_and_circles {\n\n  # a \"graph\" statement\n  graph [overlap = true, fontsize = 8]\n\n  # several \"node\" statements\n  node [shape = box,\n        fontname = Helvetica]\n  height; volume; confounding_factors;\n  speed; distance;\n\n  # several \"edge\" statements\n  confounding_factors -> height\n  confounding_factors -> volume\n  speed -> distance\n\n}\n\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-fe69f58e31df0411bd03">{"x":{"diagram":"\n\ndigraph boxes_and_circles {\n\n  # a \"graph\" statement\n  graph [overlap = true, fontsize = 8]\n\n  # several \"node\" statements\n  node [shape = box,\n        fontname = Helvetica]\n  height; volume; confounding_factors;\n  speed; distance;\n\n  # several \"edge\" statements\n  confounding_factors -> height\n  confounding_factors -> volume\n  speed -> distance\n\n}\n\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <!--/html_preserve-->
 相関関係と因果関係の違い
 ------------------------
@@ -99,17 +99,7 @@ cor.test(cars$speed, cars$dist)
 -   因果: X(speed)がY(distance)を説明(切片と傾きでモデル化)
 -   $\\hat{Y}\_i = a + b X\_i$ (aとbが0より大きいか、が問題)
 
-``` r
-X <- cars$speed; head(X)
-```
-
-    ## [1] 4 4 7 7 8 9
-
-``` r
-Y <- cars$dist; head(Y)
-```
-
-    ## [1]  2 10  4 22 16 10
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 線形回帰、パラメータ推定
 ------------------------
@@ -119,11 +109,11 @@ Y <- cars$dist; head(Y)
 -   $\\sum\_{i=1}^{n}\\varepsilon\_i^2 = \\sum\_{i=1}^{n}(Y\_i - (a + b X\_i))^2$
 
 ``` r
+X <- cars$speed
+Y <- cars$dist
 least.square <- function(parameters){
     a <- parameters[1]
     b <- parameters[2]
-    X <- cars$speed
-    Y <- cars$dist
     Y.hat <- a + b * X
     sum((Y-Y.hat)^2) # この値は誤差なので、小さいほどよい。
 }
@@ -143,7 +133,7 @@ result <- lm(Y~X)
 abline(result)
 ```
 
-<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
 線形回帰、パラメータ推定
 ------------------------

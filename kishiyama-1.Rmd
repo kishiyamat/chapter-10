@@ -2,8 +2,8 @@
 title: "Generalized Linear Model"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
-# output: ioslides_presentation
-output: github_document
+output: ioslides_presentation
+# output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -16,17 +16,6 @@ knitr::opts_chunk$set(
     fig.pos='H',
     dev = c("png", "svg")
 )
-# knitr::opts_chunk$set(echo=FALSE)
-library(DiagrammeR)
-library(tidyverse)
-library(lubridate)
-library(magrittr)
-library(ggplot2)
-library(DT)
-library(rmarkdown)
-'%r+%' <- function(a,b) rbind(a,b)
-library("dplyr")
-library("stringr")
 ```
 
 # はじめに
@@ -58,7 +47,7 @@ library("stringr")
 * なお、$f(y)$ の $y$ は応答変数 $y$ が従う確率分布のパラメターとする。
     * で結局$y$は何なの？
 
-## GLMとは？
+## GLM
 
 難しい話を順序だてて整理していく<br>
 $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \epsilon$
@@ -183,7 +172,7 @@ plot(p~x, type="b", main="ポワソン分布(パラメターは4)")
 
 確率密度関数を探る2つのアプローチ
 
-* 0匹の確率、1匹の確率、とすべての条件で調べる
+* ~~0匹の確率、1匹の確率、とすべての条件で調べる~~
 * 確率密度関数の **パラメター** を調べる （例: lambda=4）
 
 ```{r, fig.height=2.5}
@@ -212,7 +201,7 @@ plot(p.lambda.8~x, type="b", main="パラメター 8のポワソン分布")
 パラメターを変化させて、最も尤度の高い値を探せば当たり
 
 * $P(y|\theta=4)$ をすべてのyで求めて掛け算...（尤度）
-* すると値が小さくなりすぎるのでY -> log -> sum する。（対数尤度）
+* $\to$ 値が小さくなりすぎるので `Y -> log -> sum` （対数尤度）
 
 ```{r}
 # Yそれぞれの確率を求める
@@ -259,7 +248,7 @@ plot(logL~lambdas, type="l")
 
 OK、プロットしたらわかるけど、最も尤もらしい値はどうやって求めるの？ <br>
 
-$\to$ 最　尤　推　定
+$\to$ 最尤推定
 
 ## 最尤推定いろいろ
 
@@ -312,13 +301,13 @@ optim(c(2), fn = logL.f)$par
 
 ## 最尤推定のまとめ
 
-* 数学的には対数尤度関数を微分して0になった点が最尤推定地
+* 数学的には対数尤度関数を微分して0になった点が最尤推定値
 * `optim`関数でも実現できる
 * 推定するパラメターとYの値にほかの操作が入っていてもOK
 
 本当はMCMCなんかを使うとパラメターの確率分布、なんかも取れます。
 そうすると、パラメターの値とそのばらつき、標準誤差なんかもわかります。
-ただ、今回は省きます。
+(今回は省きます。)
 
 ## 今日のテーマ
 
@@ -330,4 +319,3 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
     * この式の意味って？ $\gets$ こっからが本題です。
 * 8章と9章
 * 10章
-

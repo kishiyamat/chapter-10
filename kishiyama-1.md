@@ -1,7 +1,7 @@
 Generalized Linear Model
 ================
 Takeshi Kishiyama
-2019/06/14 16:33
+2019/06/16 11:08
 
 はじめに
 ========

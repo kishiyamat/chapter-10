@@ -8,6 +8,7 @@ output: ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
+# 色々と設定
 knitr::opts_chunk$set(
     message = FALSE,
     cache = FALSE,
@@ -17,17 +18,6 @@ knitr::opts_chunk$set(
     fig.pos='H',
     dev = c("png", "svg")
 )
-# knitr::opts_chunk$set(echo=FALSE)
-library(DiagrammeR)
-library(tidyverse)
-library(lubridate)
-library(magrittr)
-library(ggplot2)
-library(DT)
-library(rmarkdown)
-'%r+%' <- function(a,b) rbind(a,b)
-library("dplyr")
-library("stringr")
 ```
 
 # **8章と9章**
@@ -35,21 +25,27 @@ library("stringr")
 ## 今日のテーマ
 
 * R入門
-* **8章と9章**
+* **8章と9章** (本題)
 * 10章
     
+```{r}
+# 余白があるのでシードを与える
+# 乱数なんかを固定できる
+set.seed(1)
+```
+
 ## 8章と9章
 
 * **相関関係と因果関係の違い**
-    * 見た目は似てるけど...?
-* 線形回帰、パラメータ推定
+    * 見た目は似ているけど...?
+* 線形回帰、パラメター推定
     * `optim` を実際に利用（GLMのウォーミングアップ）
 * 線形回帰の範囲と限界
     * できない問題、GLMならできます。
 
 ## 相関関係と因果関係の違い
 
-線形回帰の前に、以下の２つのどちらが相関で因果？
+線形回帰の前に、以下の２つのどちらが相関で因果？ (8章の冒頭)
 
 ```{r plot, fig.height=3}
 layout(matrix(1:2, ncol=2)) 
@@ -61,7 +57,7 @@ plot(x=cars$speed, y=cars$dist)
 
 ## 相関関係と因果関係の違い
 
-グラフの見た目は似ているけど、仕組みは異なる。
+前のスライドの図、見た目は似ていたけど仕組みは異なる。
 
 * 相関: X(height)とY(volume)の2変量の間の関連性
     * Xを変えてもYは変わらない。(交絡因子の存在)
@@ -70,6 +66,8 @@ plot(x=cars$speed, y=cars$dist)
     * $\to$ **XはYを説明** し、 **YはXに応答(依存、従属)**
 
 ```{r, echo=FALSE, fig.height=2}
+# DiagrammeR がない場合はスキップ 
+if(require("DiagrammeR")){
 graph <- grViz("
 
 digraph boxes_and_circles {
@@ -92,6 +90,11 @@ digraph boxes_and_circles {
 
 ")
 graph
+}else{
+print("install.packages('DiagrammeR')")
+print("# 上でDiagrammeRをインストールするとグラフを表示できる(なくても問題ない)")
+print("# http://rich-iannone.github.io/DiagrammeR/index.html")
+}
 ```
 
 ## 相関関係と因果関係の違い {.smaller}
@@ -114,19 +117,20 @@ cor.test(cars$speed, cars$dist)
 * 他方、因果はXがYを説明し、YはXに応答する。
 * 因果は相関の強さや時系列、他の知見を考慮。
 
-相関の定量化は分かったけど、**因果** はどう定量化するの？
+相関の定量化は分かったけど、**因果** はどう定量化するの？ $to$ 9章
 
 ```{r, echo=FALSE, fig.height=3}
 # 車の時速と停止距離の関係(図右)
 plot(x=cars$speed, y=cars$dist)
 ```
 
-## 線形回帰、パラメータ推定
+## 線形回帰、パラメター推定
 
-因果のある **XはYを説明** し、 **YはXに応答(依存、従属)**
+因果: **X(speed)がY(distance)を説明** し、 **YはXに応答(依存、従属)**
 
-* 因果: X(speed)がY(distance)を説明(切片と傾きでモデル化)
-* $\hat{Y}_i = a + b X_i$ (aとbが0より大きいか、が問題)
+* 切片(a)と傾き(b)を調整してモデルを作る = **回帰**
+    * $\hat{Y}_i = a + b X_i$ (GLMの式にちょっと似てきた？)
+    * $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \epsilon$
 
 ```{r, echo=FALSE, fig.height=3}
 X <- cars$speed
@@ -136,71 +140,103 @@ result <- lm(Y~X)
 abline(result)
 ```
 
-## 線形回帰、パラメータ推定
+## 線形回帰、パラメター推定
 
-モデル式と実測値の誤差を最小にするようなaとbが欲しい。
+どうやって切片($a$)や傾き($b$)を見つけるの？ $\to$ **パラメター推定**
 
-* $\sum_{i=1}^{n}\varepsilon_i^2 = \sum_{i=1}^{n}(Y_i - (a + b X_i))^2$
+* モデル式と実測値の誤差(下の式)を最小にする$a$と$b$を探索
+    * $\sum_{i=1}^{n}\varepsilon_i^2 = \sum_{i=1}^{n}(Y_i - (a + b X_i))^2$
+    * $a$や$b$を変えるといかにも誤差が大きくなりそう
     
-```{r optim}
-X <- cars$speed
-Y <- cars$dist
-least.square <- function(parameters){
-    a <- parameters[1]
-    b <- parameters[2]
-    Y.hat <- a + b * X
-    sum((Y-Y.hat)^2) # この値は誤差なので、小さいほどよい。
-}
-
-optim(c(0, 1), fn = least.square)$par
-```
-
-## 因果関係と線形回帰、パラメータ推定
-
-```{r}
-# 一行でもできる。
+```{r, echo=FALSE, fig.height=3}
 plot(Y~X)
 result <- lm(Y~X)
 abline(result)
 ```
 
-## 線形回帰、パラメータ推定 {.smaller}
+## 線形回帰、パラメター推定
+
+どうやって切片($a$)や傾き($b$)を見つけるの？ $\to$ **パラメター推定**
+
+* モデル式と実測値の誤差(下の式)を最小にする $a$ と $b$ を探索
+    * $\sum_{i=1}^{n}\varepsilon_i^2 = \sum_{i=1}^{n}(Y_i - (a + b X_i))^2$
+    
+```{r optim}
+X <- cars$speed; Y <- cars$dist
+least.square <- function(parameters){
+    a <- parameters[1]  # 切片
+    b <- parameters[2]  # 傾き
+    Y.hat <- a + b * X  # Yの予測値(線の部分)
+    sum((Y-Y.hat)^2)    # 点(Y)と線(Y.hat)と誤差のsquareを最小化(least)
+}
+
+optim(c(0, 1), fn = least.square)$par  # least sqare になるa,bを探索
+```
+
+## 線形回帰、パラメター推定
 
 ```{r}
+plot(Y~X)
+result <- lm(Y~X)  # 上の 推定を一行で実行
+abline(result)
+```
+
+## 線形回帰、パラメター推定 {.smaller}
+
+```{r}
+# Estimate は optim を使った時と大体同じ。
+# EstをSEで割ったtからpを算出
 summary(result)
 ```
 
-
-## 線形回帰、パラメータ推定まとめ
+## 線形回帰、パラメター推定まとめ
 
 * 説明変数と応答変数
 * 誤差を最小にする関数を作ってパラメター推定
-* `lm` で簡単に作れる。
-    * p(パラメターの分布が0より大きい確率...?)も出せる。
+    * `optim` で最尤推定
+    * `lm` で実行
+    * p (パラメターの分布が0より大きい確率...?) も出せる。
 
-解ける問題、解けない問題
-
-## 線形回帰の範囲と限界
-
-形
-
-* 特徴は線形
-* 非線形は？
+今の方法で解ける問題、解けない問題って？
 
 ## 線形回帰の範囲と限界
 
-誤差
+* 線形モデルの問題
+    * 直線引けない場合は？ (0か1か...って線を引ける？)
+    * 誤差が正規分布じゃない場合は？ (2値なのに0.5って？)
+* ...は一般化線形モデルなら解決できます。 $\to$ 10章へ
 
-* 誤差の範囲は？
-* ほかの分布はどうだろう。
+```{r, echo=FALSE, fig.height=3}
+X = seq(1,6,0.2)
+z = -5.56 + (1.45 * X)
+logistic <- function(z) 1/(1+exp(-z))
+q = logistic(z)
+# rbinom(1, 1, q): qの確率で起きる事象を1回観測
+Y = sapply(q, function(q){rbinom(1, 1, q)})
+plot(X,Y)
+result <- lm(Y~X)
+abline(result)
+```
 
-## 線形回帰の範囲と限界のまとめ
+## 8章と9章のまとめ
 
-解ける範囲と解けない範囲
+* **相関関係と因果関係の違い**
+    * 見た目は似ているけど違います。
+* 線形回帰、パラメター推定
+    * `optim` を実際に利用（GLMのウォーミングアップ）
+* 線形回帰の範囲と限界
+    * できない問題、GLMならできます。
 
 ## 今日のテーマ
 
-* R入門（関数型っぽく）
+$f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \epsilon$
+
+* R入門
 * **8章と9章** $\gets$ OK？
-    * 説明が足りなかった部分、教えてくださいー
+    * 相関関係と因果関係の違い
+        * GLMは因果関係の話っぽい
+    * 線形回帰、パラメター推定
+        * `optim` で実際 $\beta$ を推定すれば行けそう
+    * 線形回帰の範囲と限界
+        * $z$(線形予測子)と $f(y_i)$ (リンク関数) で解決します。
 * 10章
