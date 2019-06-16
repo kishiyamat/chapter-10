@@ -1,7 +1,7 @@
 Generalized Linear Model
 ================
 Takeshi Kishiyama
-2019/06/14 16:37
+2019/06/16 17:08
 
 **8章と9章**
 ============
@@ -10,15 +10,21 @@ Takeshi Kishiyama
 ------------
 
 -   R入門
--   **8章と9章**
+-   **8章と9章** (本題)
 -   10章
+
+``` r
+# 余白があるのでシードを与える
+# 乱数なんかを固定できる
+set.seed(1)
+```
 
 8章と9章
 --------
 
 -   **相関関係と因果関係の違い**
-    -   見た目は似てるけど...?
--   線形回帰、パラメータ推定
+    -   見た目は似ているけど...?
+-   線形回帰、パラメター推定
     -   `optim` を実際に利用（GLMのウォーミングアップ）
 -   線形回帰の範囲と限界
     -   できない問題、GLMならできます。
@@ -26,7 +32,7 @@ Takeshi Kishiyama
 相関関係と因果関係の違い
 ------------------------
 
-線形回帰の前に、以下の２つのどちらが相関で因果？
+線形回帰の前に、以下の２つのどちらが相関で因果？ (8章の冒頭)
 
 ``` r
 layout(matrix(1:2, ncol=2)) 
@@ -41,7 +47,7 @@ plot(x=cars$speed, y=cars$dist)
 相関関係と因果関係の違い
 ------------------------
 
-グラフの見た目は似ているけど、仕組みは異なる。
+前のスライドの図、見た目は似ていたけど仕組みは異なる。
 
 -   相関: X(height)とY(volume)の2変量の間の関連性
     -   Xを変えてもYは変わらない。(交絡因子の存在)
@@ -51,7 +57,7 @@ plot(x=cars$speed, y=cars$dist)
 
 <!--html_preserve-->
 
-<script type="application/json" data-for="htmlwidget-fe69f58e31df0411bd03">{"x":{"diagram":"\n\ndigraph boxes_and_circles {\n\n  # a \"graph\" statement\n  graph [overlap = true, fontsize = 8]\n\n  # several \"node\" statements\n  node [shape = box,\n        fontname = Helvetica]\n  height; volume; confounding_factors;\n  speed; distance;\n\n  # several \"edge\" statements\n  confounding_factors -> height\n  confounding_factors -> volume\n  speed -> distance\n\n}\n\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-435f92e833e5f1a9a10f">{"x":{"diagram":"\n\ndigraph boxes_and_circles {\n\n  # a \"graph\" statement\n  graph [overlap = true, fontsize = 8]\n\n  # several \"node\" statements\n  node [shape = box,\n        fontname = Helvetica]\n  height; volume; confounding_factors;\n  speed; distance;\n\n  # several \"edge\" statements\n  confounding_factors -> height\n  confounding_factors -> volume\n  speed -> distance\n\n}\n\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <!--/html_preserve-->
 相関関係と因果関係の違い
 ------------------------
@@ -87,58 +93,71 @@ cor.test(cars$speed, cars$dist)
 -   他方、因果はXがYを説明し、YはXに応答する。
 -   因果は相関の強さや時系列、他の知見を考慮。
 
-相関の定量化は分かったけど、**因果** はどう定量化するの？
-
-<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
-
-線形回帰、パラメータ推定
-------------------------
-
-因果のある **XはYを説明** し、 **YはXに応答(依存、従属)**
-
--   因果: X(speed)がY(distance)を説明(切片と傾きでモデル化)
--   $\\hat{Y}\_i = a + b X\_i$ (aとbが0より大きいか、が問題)
+相関の定量化は分かったけど、**因果** はどう定量化するの？ *t**o* 9章
 
 <img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
-線形回帰、パラメータ推定
+線形回帰、パラメター推定
 ------------------------
 
-モデル式と実測値の誤差を最小にするようなaとbが欲しい。
+因果: **X(speed)がY(distance)を説明** し、 **YはXに応答(依存、従属)**
 
--   $\\sum\_{i=1}^{n}\\varepsilon\_i^2 = \\sum\_{i=1}^{n}(Y\_i - (a + b X\_i))^2$
+-   切片(a)と傾き(b)を調整してモデルを作る = **回帰**
+    -   $\\hat{Y}\_i = a + b X\_i$ (GLMの式にちょっと似てきた？)
+    -   *f*(*y*<sub>*i*</sub>)=*z*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*1</sub> + *β*<sub>2</sub>*x*<sub>*i*2</sub> + ...*β*<sub>*k*</sub>*x*<sub>*i**k*</sub> + *ϵ*
+
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+
+線形回帰、パラメター推定
+------------------------
+
+どうやって切片(*a*)や傾き(*b*)を見つけるの？ → **パラメター推定**
+
+-   モデル式と実測値の誤差(下の式)を最小にする*a*と*b*を探索
+    -   $\\sum\_{i=1}^{n}\\varepsilon\_i^2 = \\sum\_{i=1}^{n}(Y\_i - (a + b X\_i))^2$
+    -   *a*や*b*を変えるといかにも誤差が大きくなりそう
+
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+
+線形回帰、パラメター推定
+------------------------
+
+どうやって切片(*a*)や傾き(*b*)を見つけるの？ → **パラメター推定**
+
+-   モデル式と実測値の誤差(下の式)を最小にする *a* と *b* を探索
+    -   $\\sum\_{i=1}^{n}\\varepsilon\_i^2 = \\sum\_{i=1}^{n}(Y\_i - (a + b X\_i))^2$
 
 ``` r
-X <- cars$speed
-Y <- cars$dist
+X <- cars$speed; Y <- cars$dist
 least.square <- function(parameters){
-    a <- parameters[1]
-    b <- parameters[2]
-    Y.hat <- a + b * X
-    sum((Y-Y.hat)^2) # この値は誤差なので、小さいほどよい。
+    a <- parameters[1]  # 切片
+    b <- parameters[2]  # 傾き
+    Y.hat <- a + b * X  # Yの予測値(線の部分)
+    sum((Y-Y.hat)^2)    # 点(Y)と線(Y.hat)と誤差のsquareを最小化(least)
 }
 
-optim(c(0, 1), fn = least.square)$par
+optim(c(0, 1), fn = least.square)$par  # least sqare になるa,bを探索
 ```
 
     ## [1] -17.578151   3.932216
 
-因果関係と線形回帰、パラメータ推定
-----------------------------------
-
-``` r
-# 一行でもできる。
-plot(Y~X)
-result <- lm(Y~X)
-abline(result)
-```
-
-<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
-
-線形回帰、パラメータ推定
+線形回帰、パラメター推定
 ------------------------
 
 ``` r
+plot(Y~X)
+result <- lm(Y~X)  # 上の 推定を一行で実行
+abline(result)
+```
+
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
+
+線形回帰、パラメター推定
+------------------------
+
+``` r
+# Estimate は optim を使った時と大体同じ。
+# EstをSEで割ったtからpを算出
 summary(result)
 ```
 
@@ -161,41 +180,48 @@ summary(result)
     ## Multiple R-squared:  0.6511, Adjusted R-squared:  0.6438 
     ## F-statistic: 89.57 on 1 and 48 DF,  p-value: 1.49e-12
 
-線形回帰、パラメータ推定まとめ
+線形回帰、パラメター推定まとめ
 ------------------------------
 
 -   説明変数と応答変数
 -   誤差を最小にする関数を作ってパラメター推定
--   `lm` で簡単に作れる。
-    -   p(パラメターの分布が0より大きい確率...?)も出せる。
+    -   `optim` で最尤推定
+    -   `lm` で実行
+    -   p (パラメターの分布が0より大きい確率...?) も出せる。
 
-解ける問題、解けない問題
-
-線形回帰の範囲と限界
---------------------
-
-形
-
--   特徴は線形
--   非線形は？
+今の方法で解ける問題、解けない問題って？
 
 線形回帰の範囲と限界
 --------------------
 
-誤差
+-   線形モデルの問題
+    -   直線引けない場合は？ (0か1か...って線を引ける？)
+    -   誤差が正規分布じゃない場合は？ (2値なのに0.5って？)
+-   ...は一般化線形モデルなら解決できます。 → 10章へ
 
--   誤差の範囲は？
--   ほかの分布はどうだろう。
+<img src="kishiyama-2_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
-線形回帰の範囲と限界のまとめ
-----------------------------
+8章と9章のまとめ
+----------------
 
-解ける範囲と解けない範囲
+-   **相関関係と因果関係の違い**
+    -   見た目は似ているけど違います。
+-   線形回帰、パラメター推定
+    -   `optim` を実際に利用（GLMのウォーミングアップ）
+-   線形回帰の範囲と限界
+    -   できない問題、GLMならできます。
 
 今日のテーマ
 ------------
 
--   R入門（関数型っぽく）
+*f*(*y*<sub>*i*</sub>)=*z*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>*i*1</sub> + *β*<sub>2</sub>*x*<sub>*i*2</sub> + ...*β*<sub>*k*</sub>*x*<sub>*i**k*</sub> + *ϵ*
+
+-   R入門
 -   **8章と9章** ← OK？
-    -   説明が足りなかった部分、教えてくださいー
+    -   相関関係と因果関係の違い
+        -   GLMは因果関係の話っぽい
+    -   線形回帰、パラメター推定
+        -   `optim` で実際 *β* を推定すれば行けそう
+    -   線形回帰の範囲と限界
+        -   *z*(線形予測子)と *f*(*y*<sub>*i*</sub>) (リンク関数) で解決します。
 -   10章
