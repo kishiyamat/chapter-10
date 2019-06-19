@@ -240,3 +240,5 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
     * 線形回帰の範囲と限界
         * $z$(線形予測子)と $f(y_i)$ (リンク関数) で解決します。
 * 10章
+
+質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)から

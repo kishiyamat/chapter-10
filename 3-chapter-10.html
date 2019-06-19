@@ -3106,7 +3106,7 @@ if (document.readyState !== "loading" &&
       <h1 data-config-title><!-- populated from slide_config.json --></h1>
       <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
       <p data-config-presenter><!-- populated from slide_config.json --></p>
-            <p style="margin-top: 6px; margin-left: -2px;">2019/06/16 20:32</p>
+            <p style="margin-top: 6px; margin-left: -2px;">2019/06/20 07:05</p>
           </hgroup>
   </slide>
 
@@ -3129,7 +3129,7 @@ set.seed(1)</pre>
 <ul>
 <li>一般化線形モデルが解決できる問題</li>
 <li>一般化線形モデルのパラメータ推定</li>
-<li>パラメータ推定の細かい話</li>
+<li>GLMの細かい話</li>
 </ul>
 
 </article></slide><slide class=""><hgroup><h2>一般化線形モデルが解決できる問題</h2></hgroup><article >
@@ -3248,7 +3248,7 @@ optim(c(1,1), LL)$par</pre>
 
 <pre >## [1] -4.882872  1.240992</pre>
 
-</article></slide><slide class=""><hgroup><h2>一般化線形モデルのパラメータ推定</h2></hgroup><article  class="smaller" id="-3">
+</article></slide><slide class=""><hgroup><h2>一般化線形モデルのパラメータ推定</h2></hgroup><article  id="-3" class="smaller">
 
 <pre class = 'prettyprint lang-r'># 線形回帰の時と同じく、一行で実行可能
 result &lt;- glm(Y~X, family=binomial(logit))
@@ -3277,7 +3277,7 @@ summary(result)</pre>
 ## 
 ## Number of Fisher Scoring iterations: 5</pre>
 
-</article></slide><slide class=""><hgroup><h2>パラメータ推定の細かい話</h2></hgroup><article >
+</article></slide><slide class=""><hgroup><h2>GLMの細かい話</h2></hgroup><article  id="glm">
 
 <ul>
 <li>p値はどこから？
@@ -3302,7 +3302,25 @@ summary(result)</pre>
 </ul></li>
 </ul>
 
-</article></slide><slide class=""><hgroup><h2>GLM</h2></hgroup><article  id="glm">
+</article></slide><slide class=""><hgroup><h2>今日のテーマ</h2></hgroup><article  id="-1">
+
+<p>\(f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \epsilon\)</p>
+
+<ul>
+<li><strong>R入門</strong> \(\gets\) OK？</li>
+<li>8章と9章</li>
+<li>10章
+
+<ul>
+<li>GLMは正規分布以外の誤差、非線形のデータをモデルできる</li>
+<li>モデルを組んで最尤推定して条件に対する切片を求める</li>
+<li>p値はパラメターの値/パラメターのバラつきを指標に求める</li>
+</ul></li>
+</ul>
+
+<p>質問は<a href='https://forms.gle/KykyRxrL3LS6oUm89' title=''>こちら</a>から</p>
+
+</article></slide><slide class=""><hgroup><h2>GLMのまとめ</h2></hgroup><article  id="glm">
 
 <p>一般化線形モデル、GLM(Generalized Linear Model)とは？ <br> (教科書のp.141)</p>
 
