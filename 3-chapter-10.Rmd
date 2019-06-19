@@ -157,7 +157,7 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
     * モデルを組んで最尤推定して条件に対する切片を求める
     * p値はパラメターの値/パラメターのバラつきを指標に求める
 
-質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)から
+質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)から([GitHub](https://github.com/kishiyamat/glm-2019))
 
 ## GLMのまとめ
 

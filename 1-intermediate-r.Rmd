@@ -59,8 +59,6 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
 * 線形予測子、リンク関数
     * 10章で片付けます。
 
-質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)でも受け付けます
-
 ## 今日のテーマ
 
 以下でGLMが分かる
@@ -71,6 +69,8 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
     * 因果(説明変数、応答変数)を理解する
 * 10章 (30分)
     * 線形予測子とリンク関数を理解する
+
+質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)でも受け付けます([GitHub](https://github.com/kishiyamat/glm-2019))
 
 # R入門
 
@@ -323,4 +323,5 @@ $f(y_i) = z_i =\beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + ... \beta_kx_{ik} + \ep
 * 8章と9章
 * 10章
 
-質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)から
+質問は[こちら](https://forms.gle/KykyRxrL3LS6oUm89)から([GitHub](https://github.com/kishiyamat/glm-2019))
+
