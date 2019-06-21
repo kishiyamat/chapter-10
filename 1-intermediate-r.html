@@ -3106,7 +3106,7 @@ if (document.readyState !== "loading" &&
       <h1 data-config-title><!-- populated from slide_config.json --></h1>
       <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
       <p data-config-presenter><!-- populated from slide_config.json --></p>
-            <p style="margin-top: 6px; margin-left: -2px;">2019/06/20 07:12</p>
+            <p style="margin-top: 6px; margin-left: -2px;">2019/06/21 11:20</p>
           </hgroup>
   </slide>
 
@@ -3382,7 +3382,9 @@ prod(p)  # 0.1, のような値を100個掛け合わせるのでめっちゃ小�
 <li>Yが与えられているときにパラメター(λ)の尤度を求める関数を考える</li>
 </ul>
 
-<pre class = 'prettyprint lang-r'>logL.f &lt;- function(l){
+<pre class = 'prettyprint lang-r'># 「こういうパラメターを与えたら、尤度(対数)はどれくらいですか？」
+# を与えられているデータYに対して返してくれる関数
+logL.f &lt;- function(l){
     # Yは与えられていて、今度はlambda(l)を引数にとって尤度を返す
     Y.p &lt;- dpois(lambda=l, Y)
     sum(log(Y.p))
