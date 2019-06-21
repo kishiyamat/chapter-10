@@ -9,3 +9,4 @@
 * [10章](http://phiz.c.u-tokyo.ac.jp/~kisiyama/glm-2019/3-chapter-10.html)
     * 線形予測子とリンク関数を理解する
 
+<!-- knit and then rename README.html to index.html -->
