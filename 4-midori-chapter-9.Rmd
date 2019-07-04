@@ -1,0 +1,84 @@
+---
+title: "Generalized Linear Model 4"
+author: "Takeshi Kishiyama"
+date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
+output: ioslides_presentation
+# output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    message = FALSE,
+    cache = FALSE,
+    warning = FALSE,
+    width=6,
+    fig.align='center',
+    fig.pos='H',
+    dev = c("png", "svg")
+)
+# rstan
+library("rstan")
+library("ggplot2")
+library("tidyverse")
+# install.packages("ggmcmc")
+library("ggmcmc")
+library("parallel")
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+```
+
+# はじめに
+
+```{r}
+# 余白があるのでシードを与える
+# 乱数なんかを固定できる
+set.seed(1)
+```
+    
+## 緑本9章
+
+* **GLMのベイズモデル化(個体差なし)**
+* GLMのベイズモデル化(個体差あり)
+
+## データ取得
+
+```{r}
+d <- read.csv("http://hosho.ees.hokudai.ac.jp/~kubo/stat/iwanamibook/fig/poisson/data3a.csv")
+summary(d)
+```
+
+## 視覚化
+
+```{r}
+plot(y~x, data=d)
+```
+
+## モデルの作成
+    
+まず、紙にモデルを描く。
+ポアソン分布の求めたいパラメターを露光する。
+求めたいパラメターは 
+$\beta_1$ と $\beta_2$ がある。
+個体差は考慮しないので、まずはこれだけ。
+
+* $\lambda_i = exp(\beta_1 + \beta_2 x_i)$
+* $y_i \sim Pois(\lambda_i)$
+
+## Stan ファイルの作成
+
+```{r}
+model.chapter.9 <- "model/4-midori-chapter-9-1.stan"
+```
+
+## モデルフィッティング
+
+```{r}
+data <- list(N = nrow(d),
+             X = d$X,
+             Y = d$Y)
+fit <- stan(file=model.chapter.9, data=data, seed=1234)
+system.time(save.image(file="output/practice-4-3.RData"))
+system.time(model.summary <- summary(fit)$summary[c("b1","b2"),] )
+model.summary
+```
+
