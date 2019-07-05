@@ -1,0 +1,135 @@
+---
+title: "Generalized Linear Model 5"
+author: "Takeshi Kishiyama"
+date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
+# output: ioslides_presentation
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    message = FALSE,
+    cache = FALSE,
+    warning = FALSE,
+    width=6,
+    fig.align='center',
+    fig.pos='H',
+    dev = c("png", "svg")
+)
+# rstan
+library("rstan")
+library("ggplot2")
+library("tidyverse")
+# install.packages("ggmcmc")
+library("ggmcmc")
+library("parallel")
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+```
+
+# はじめに
+
+```{r}
+# 余白があるのでシードを与える
+# 乱数なんかを固定できる
+set.seed(1)
+```
+    
+## 緑本10章
+
+* GLMのベイズモデル化(個体差なし)
+* **GLMのベイズモデル化(個体差あり)**
+
+## データ取得
+
+```{r}
+d <- read.csv("http://hosho.ees.hokudai.ac.jp/~kubo/stat/iwanamibook/fig/hbm/data7a.csv")
+d["M"] <- 8
+summary(d)
+```
+
+## 視覚化
+
+```{r}
+hist(d$y)
+```
+
+## モデルの作成
+    
+まず、紙にモデルを描く。
+ポアソン分布の求めたいパラメターを露光する。
+求めたいパラメターは 
+$\beta$ と $r[i]$ がある。
+
+* $q_i = inv_logit(\beta + r_i)$
+* $Y_i \sim binomial(M_i, q_i)$
+
+## Stan ファイルの作成
+
+```{r}
+model.chapter.10 <- "model/5-midori-chapter-10-1.stan"
+```
+
+## モデルフィッティング
+
+```{r}
+data <- list(N = nrow(d),
+             M = d$M,
+             Y = d$y)
+fit <- stan(file=model.chapter.10, data=data, seed=1234)
+save.image(file="output/practice-10-1.RData")
+model.summary <- summary(fit)$summary
+```
+
+## モデルフィッティング
+
+```{r}
+model.summary
+```
+
+
+## Visualize
+
+```{r}
+load("output/practice-4-3.RData")
+
+write.table(data.frame(summary(fit)$summary),
+  file='output/fit-summary.txt', sep='\t', quote=FALSE, col.names=NA)
+
+pdf.output <- "output/fit-traceplot.pdf"
+ggmcmc(ggs(fit, inc_warmup=TRUE, stan_include_auxiliar=TRUE),
+  file=pdf.output, plot='traceplot')
+```
+
+## Bayesian confidence interval
+
+```{r}
+ms <- rstan::extract(fit)
+head(ms$b1)
+# bayesian confidence interval (for parameter)
+hist(ms$b1)
+```
+```{r}
+# 95% Bayesian confidence interval
+quantile(ms$b1, probs=c(0.025, 0.975))
+```
+
+```{r}
+d_mcmc <- data.frame(b1=ms$b1, b2=ms$b2)
+plot(d_mcmc)
+```
+
+## Bayesian prediction interval
+
+```{r}
+N_mcmc <- length(ms$lp__)
+# random sampling in the case of x==10
+y_10_lambda <- exp(ms$b1 + ms$b2 * 10)
+y_10_pred <- rpois(n=N_mcmc, y_10_lambda)
+pred <- data.frame(y_10_lambda = y_10_lambda,
+                   y_10_pred   = y_10_pred)
+d_mcmc <- cbind(d_mcmc, pred)
+# predictive distribution (of new data)
+hist(d_mcmc$y_10_pred)
+```
+
