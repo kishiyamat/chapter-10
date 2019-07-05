@@ -2,8 +2,8 @@
 title: "Generalized Linear Model 4"
 author: "Takeshi Kishiyama"
 date: '`r format(Sys.time(), "%Y/%m/%d %H:%M")`'
-output: ioslides_presentation
-# output: github_document
+# output: ioslides_presentation
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -74,11 +74,62 @@ model.chapter.9 <- "model/4-midori-chapter-9-1.stan"
 
 ```{r}
 data <- list(N = nrow(d),
-             X = d$X,
-             Y = d$Y)
+             X = d$x,
+             Y = d$y)
 fit <- stan(file=model.chapter.9, data=data, seed=1234)
-system.time(save.image(file="output/practice-4-3.RData"))
-system.time(model.summary <- summary(fit)$summary[c("b1","b2"),] )
+save.image(file="output/practice-4-3.RData")
+model.summary <- summary(fit)$summary[c("b1","b2"),]
+```
+
+## モデルフィッティング
+
+```{r}
 model.summary
+```
+
+
+## Visualize
+
+```{r}
+load("output/practice-4-3.RData")
+
+write.table(data.frame(summary(fit)$summary),
+  file='output/fit-summary.txt', sep='\t', quote=FALSE, col.names=NA)
+
+pdf.output <- "output/fit-traceplot.pdf"
+ggmcmc(ggs(fit, inc_warmup=TRUE, stan_include_auxiliar=TRUE),
+  file=pdf.output, plot='traceplot')
+```
+
+## Bayesian confidence interval
+
+```{r}
+ms <- rstan::extract(fit)
+head(ms$b1)
+# bayesian confidence interval (for parameter)
+hist(ms$b1)
+```
+```{r}
+# 95% Bayesian confidence interval
+quantile(ms$b1, probs=c(0.025, 0.975))
+```
+
+```{r}
+d_mcmc <- data.frame(b1=ms$b1, b2=ms$b2)
+plot(d_mcmc)
+```
+
+## Bayesian prediction interval
+
+```{r}
+N_mcmc <- length(ms$lp__)
+# random sampling in the case of x==10
+y_10_lambda <- exp(ms$b1 + ms$b2 * 10)
+y_10_pred <- rpois(n=N_mcmc, y_10_lambda)
+pred <- data.frame(y_10_lambda = y_10_lambda,
+                   y_10_pred   = y_10_pred)
+d_mcmc <- cbind(d_mcmc, pred)
+# predictive distribution (of new data)
+hist(d_mcmc$y_10_pred)
 ```
 
