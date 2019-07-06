@@ -63,6 +63,7 @@ $\beta$ と $r[i]$ がある。
 
 * $q_i = inv_logit(\beta + r_i)$
 * $Y_i \sim binomial(M_i, q_i)$
+* $r_i = normal(0 + \sigma)$
 
 ## Stan ファイルの作成
 
@@ -74,29 +75,30 @@ model.chapter.10 <- "model/5-midori-chapter-10-1.stan"
 
 ```{r}
 data <- list(N = nrow(d),
-             M = d$M,
              Y = d$y)
 fit <- stan(file=model.chapter.10, data=data, seed=1234)
 save.image(file="output/practice-10-1.RData")
 model.summary <- summary(fit)$summary
+model.summary[c('beta','sigma'),]
+rs.mean <- model.summary[paste0(paste0('r[',1:100),']'),"mean"]
 ```
 
 ## モデルフィッティング
 
+randoms
+
 ```{r}
-model.summary
+hist(rs.mean)
 ```
 
 
 ## Visualize
 
 ```{r}
-load("output/practice-4-3.RData")
-
 write.table(data.frame(summary(fit)$summary),
-  file='output/fit-summary.txt', sep='\t', quote=FALSE, col.names=NA)
+  file='output/fit-summary-10-2.txt', sep='\t', quote=FALSE, col.names=NA)
 
-pdf.output <- "output/fit-traceplot.pdf"
+pdf.output <- "output/fit-traceplot-2.pdf"
 ggmcmc(ggs(fit, inc_warmup=TRUE, stan_include_auxiliar=TRUE),
   file=pdf.output, plot='traceplot')
 ```
@@ -105,17 +107,28 @@ ggmcmc(ggs(fit, inc_warmup=TRUE, stan_include_auxiliar=TRUE),
 
 ```{r}
 ms <- rstan::extract(fit)
-head(ms$b1)
 # bayesian confidence interval (for parameter)
-hist(ms$b1)
+hist(ms$b)
 ```
+
+
 ```{r}
-# 95% Bayesian confidence interval
-quantile(ms$b1, probs=c(0.025, 0.975))
+# s
+hist(ms$sigma)
 ```
 
 ```{r}
-d_mcmc <- data.frame(b1=ms$b1, b2=ms$b2)
+# 95% Bayesian confidence interval
+quantile(ms$b, probs=c(0.025, 0.975))
+```
+
+```{r}
+# 95% Bayesian confidence interval
+quantile(ms$sigma, probs=c(0.025, 0.975))
+```
+
+```{r}
+d_mcmc <- data.frame(b=ms$b)
 plot(d_mcmc)
 ```
 
@@ -123,13 +136,15 @@ plot(d_mcmc)
 
 ```{r}
 N_mcmc <- length(ms$lp__)
-# random sampling in the case of x==10
-y_10_lambda <- exp(ms$b1 + ms$b2 * 10)
-y_10_pred <- rpois(n=N_mcmc, y_10_lambda)
-pred <- data.frame(y_10_lambda = y_10_lambda,
-                   y_10_pred   = y_10_pred)
+z <- ms$b + rnorm(n=N_mcmc, sd = ms$sigma)
+q <- 1/(1+exp(-z))
+y_pred <- rbinom(n=N_mcmc, size=8, prob=q)
+
+pred <- data.frame(q = q,
+                   y_pred   = y_pred)
 d_mcmc <- cbind(d_mcmc, pred)
+head(d_mcmc)
 # predictive distribution (of new data)
-hist(d_mcmc$y_10_pred)
+hist(d_mcmc$y_pred)
 ```
 
